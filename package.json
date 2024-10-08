@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "NODE_ENV=dev node --env-file=.env  --watch server.js",
     "start": "NODE_ENV=prod node --env-file=.env server.js",
-    "watch:js": "parcel watch ./src/public/js/index.js --dist-dir ./src/public/dist"
+    "watch:js": "parcel watch ./src/public/js/index.js --dist-dir ./src/public/dist",
+    "build:js": "parcel build ./src/public/js/index.js --dist-dir ./src/public/dist"
   },
   "keywords": [],
   "author": "",
