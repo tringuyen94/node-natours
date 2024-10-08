@@ -5,12 +5,14 @@ const errorHandler = require('./error/handler');
 const appRouter = require('./routes/index');
 const rateLimit = require('express-rate-limit');
 const { default: helmet } = require('helmet');
+const cors = require('cors');
 const mongoSanitize = require('express-mongo-sanitize');
 const hpp = require('hpp');
 const path = require('path');
 const app = express();
 const viewRouter = require('./routes/view.routes');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 
 process.on('uncaughtException', (err) => {
   console.log(err.name, err.message);
@@ -24,6 +26,8 @@ app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
+//CROSS-ORIGIN-RESOURCE-SHARING
+app.use(cors());
 //HELMET
 app.use(
   helmet({
@@ -61,15 +65,22 @@ app.use(
     },
   })
 );
+//COMPRESSION TEXT
+app.use(compression());
+//COOKIE PARSER
 app.use(cookieParser());
 if (process.env.NODE_ENV === 'dev') {
   app.use(morgan('dev')); // Log request
 }
+
+//Limit request option
 const limiter = rateLimit({
   max: 100,
   windowMs: 60 * 60 * 1000,
   message: 'Too many request was sent, try again one hour later',
 });
+app.use('/api', limiter);
+
 // app.get('/', (req, res, next) => {
 //   console.log(req.cookies);
 //   next();
@@ -78,16 +89,17 @@ app.get('/', (req, res) => {
   res.status(200).render('base');
 });
 
-app.use('/api', limiter); //Limit Request
-app.use(mongoSanitize()); //Data sanitize against NoSQL injection
+//Data sanitize against NoSQL injection
+app.use(mongoSanitize());
+
 app.use(
   hpp({
     whitelist: ['duration'],
   })
 );
 
-// app.use('');
-app.use(express.json({ limit: '10kb' })); // req.body parser
+// req.body parser
+app.use(express.json({ limit: '10kb' }));
 
 /** END */
 
